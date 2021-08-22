@@ -16,8 +16,10 @@ export interface ThreeParams {
    */
   Control?: Control | undefined;
   Lights?: Light[] | undefined;
+  Model?: Model;
 }
 
 type Camera = THREE.PerspectiveCamera | THREE.StereoCamera;
 type Control = OrbitControls;
 type Light = THREE.AmbientLight;
+type Model = THREE.Group;

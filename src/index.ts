@@ -1,130 +1,341 @@
 import * as THREE from "three";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { GUI } from "dat.gui";
-import { ThreeParams } from "./ThreeParams";
 
+let init = null;
 window.addEventListener("DOMContentLoaded", () => {
-  // レンダラーを作成
-  const renderer = new THREE.WebGLRenderer();
-  // レンダラーのサイズを設定
-  renderer.setSize(800, 600);
-  // canvasをbodyに追加
-  document.body.appendChild(renderer.domElement);
+  init = new UpReFBX();
+});
 
-  // シーンを作成
-  const scene = new THREE.Scene();
+class UpReFBX {
+  // property
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  controls: OrbitControls;
+  renderer: THREE.WebGLRenderer;
+  AmbientLights: THREE.AmbientLight[];
+  DirectionalLights: THREE.DirectionalLight[];
+  clock: THREE.Clock;
+  mixer: THREE.AnimationMixer;
+  model: THREE.Group;
+  actions: THREE.AnimationAction[];
+  loader: FBXLoader;
+  // for renderer
+  container: any;
+  // for dat
+  panel: GUI;
+  // for controls
+  controls_target: THREE.Vector3;
+  // for animate
+  previousRAF: any;
 
-  // カメラを作成
-  const camera = new THREE.PerspectiveCamera(45, 800 / 600, 1, 10000);
-  console.log("camera", camera);
-  camera.position.set(0, 400, 500);
-
-  // OrbitControls
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target = new THREE.Vector3(0, 300, 0);
-
-  // モデルをロード
-  const fbxLoader = new FBXLoader();
-  fbxLoader.load("./test.fbx", (object) => {
-    console.log("object", object);
-    object.scale.set(30, 30, 30);
-    scene.add(object);
-  });
-
-  // 平行光源を生成
-  const light = new THREE.DirectionalLight(0xffffff);
-  light.position.set(1, 1, 1);
-  scene.add(light);
-
-  // ヘルパーを追加
-  const AxesHelper = new THREE.AxesHelper(1000);
-  AxesHelper.visible = false;
-  scene.add(AxesHelper);
-
-  const ThreeParamsStore: ThreeParams = {};
-
-  init("container");
-  function init(elementId: string) {
-    const container = document.getElementById(elementId);
+  constructor() {
+    this.init();
   }
 
-  function createPanel() {}
+  init(): void {
+    // renderer
+    this.container = document.getElementById("container");
+    this.renderer = new THREE.WebGLRenderer();
+    const width: number = 960;
+    const height: number = 500;
+    this.renderer.setSize(width, height);
+    this.container.appendChild(this.renderer.domElement);
 
+    // scene
+    this.scene = new THREE.Scene();
+
+    // camera
+    const fov = 60;
+    const aspect = width / height;
+    const near = 1.0;
+    const far = 1000.0;
+    this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    this.camera.position.set(0, 0, 100);
+    this.scene.add(this.camera);
+
+    // controls
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls_target = new THREE.Vector3(0, 0, 0);
+    this.controls.target.set(
+      this.controls_target.x,
+      this.controls_target.y,
+      this.controls_target.z
+    );
+    this.controls.update();
+
+    // lights
+    // AmbientLight
+    this.AmbientLights = new Array();
+    this.AmbientLights[0] = new THREE.AmbientLight(0xffffff, 4.0);
+    this.scene.add(this.AmbientLights[0]);
+    // DirectionalLight
+    this.DirectionalLights = new Array();
+    this.DirectionalLights[0] = new THREE.DirectionalLight(0xffffff, 2.0);
+    this.DirectionalLights[0].position.set(20, 100, 10);
+    this.scene.add(this.DirectionalLights[0]);
+
+    // clock
+    this.clock = new THREE.Clock();
+
+    // dnd
+    // fbx is loaded only dnd
+    this.dnd();
+
+    // animate
+    this.animate();
+  }
+
+  animate(): any {
+    requestAnimationFrame((t) => {
+      if (this.previousRAF === null) {
+        this.previousRAF = t;
+      }
+      // t の単位はms(example: 現実 0.016s, 出力 16)
+      // よって、0.001倍してmsに変換する必要がある
+      let deltaTime = (t - this.previousRAF) * 0.001;
+      if (this.mixer) this.mixer.update(deltaTime);
+      this.animate();
+      this.renderer.render(this.scene, this.camera);
+      this.previousRAF = t;
+    });
+  }
+
+  dnd(): void {
+    this.container.addEventListener("dragover", (e: any) => {
+      // ブラウザのデフォルトの挙動が優先されるのを回避するために必要
+      e.preventDefault();
+    });
+    this.container.addEventListener("dragenter", (e: any) => {
+      // 入ったことを通知するCSSを追加
+      console.log("dragenter");
+    });
+    this.container.addEventListener("dragleave", (e: any) => {
+      // 出たことを通知するCSSを追加
+      console.log("dragleave");
+    });
+    this.container.addEventListener("drop", (e: any) => {
+      // ブラウザのデフォルトの挙動が優先されるのを回避するために必要
+      e.stopPropagation();
+      e.preventDefault();
+      const files = e.dataTransfer.files;
+      const file = files.length === 1 && files[0];
+      const url = window.URL.createObjectURL(file);
+      // load animation
+      this.loadfbx(url);
+      // urlを解放する
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  loadfbx(url: any) {
+    // load
+    this.loader = new FBXLoader();
+    this.loader.load(url, (model) => {
+      this.model = model;
+      this.mixer = new THREE.AnimationMixer(model);
+      // 初期化しないとエラーするから必要
+      this.actions = new Array();
+      this.actions[0] = this.mixer.clipAction(model.animations[0]);
+      this.actions[0].play();
+      this.scene.add(model);
+      /**
+       * loaderの中でdatを読み込むことによって、
+       * modelとmixerもベースオブジェクトとして渡すことができる
+       * よって、datは必ずこの位置で読み込まないといけない
+       */
+      this.dat();
+    });
+  }
+
+  dat(this: any): any {
+    // デフォルトでブラウザの右上に配置する挙動をさせない
+    this.panel = new GUI({ autoPlace: false });
+    // キャンバスへ追加
+    this.container.appendChild(this.panel.domElement);
+
+    // folders
+    // camera
+    const camera = this.panel.addFolder("Camera");
+    // lights
+    const lights = this.panel.addFolder("Lights");
+    const AmbientLights = lights.addFolder("AmbientLights");
+    const DirectionalLights = lights.addFolder("DirectionalLights");
+    // model
+    const model: GUI = this.panel.addFolder("Model");
+    const scale: GUI = model.addFolder("Scale");
+
+    console.log("model: ", this.model);
+    // dat.guiが読み込めるのはprimitive型のみ
+    // objectを読み込ませるとエラーが出るので要注意
+    const settings = {
+      camera: {},
+      "camera x": this.camera.position.x,
+      "camera y": this.camera.position.y,
+      "camera z": this.camera.position.z,
+      model: {
+        scale: {
+          curretscale: 1,
+          step: 1,
+          reset: scaleReset.bind(this),
+          up: scaleUp.bind(this),
+          down: scaleDown.bind(this),
+        },
+      },
+    };
+    console.log("setting: ", settings);
+
+    // params
+    // camera
+    camera
+      .add(settings, "camera x", -500, 500, 1)
+      .onChange(moveCameraX.bind(this));
+    camera
+      .add(settings, "camera y", -500, 500, 1)
+      .onChange(moveCameraY.bind(this));
+    camera
+      .add(settings, "camera z", -500, 500, 1)
+      .onChange(moveCameraZ.bind(this));
+    // lights
+    // lightsは配列で定義すれば、フォルダの管理はどうにかなる
+
+    // model
+    scale.add(settings.model.scale, "step");
+    scale.add(settings.model.scale, "reset");
+    scale.add(settings.model.scale, "up");
+    scale.add(settings.model.scale, "down");
+
+    // folder status
+    camera.open();
+    model.open();
+    scale.open();
+
+    // moveCamera
+    function moveCameraX(this: any, value: number): void {
+      this.camera.position.set(
+        value,
+        this.camera.position.y,
+        this.camera.position.z
+      );
+    }
+    function moveCameraY(this: any, value: number): void {
+      this.camera.position.set(
+        this.camera.position.x,
+        value,
+        this.camera.position.z
+      );
+    }
+    function moveCameraZ(this: any, value: number): void {
+      this.camera.position.set(
+        this.camera.position.x,
+        this.camera.position.y,
+        value
+      );
+    }
+
+    // model
+    function scaleReset(this: any): void {
+      this.model.scale.setScalar(1);
+      settings.model.scale.curretscale = 1;
+    }
+    function scaleUp(this: any): void {
+      settings.model.scale.curretscale += settings.model.scale.step;
+      this.model.scale.setScalar(settings.model.scale.curretscale);
+    }
+    function scaleDown(this: any): void {
+      settings.model.scale.curretscale -= settings.model.scale.step;
+      this.model.scale.setScalar(settings.model.scale.curretscale);
+    }
+
+    this.style();
+  }
+
+  style(): void {
+    // panelをabsoluteにするために、containerをrelativeにする
+    this.container.style.position = "relative";
+    // contaierに対し、絶対値で配置
+    this.panel.domElement.style.position = "absolute";
+    this.panel.domElement.style.top = "2px";
+    this.panel.domElement.style.right = "2px";
+  }
+}
+
+function oldinit() {
+  // renderer
+  const container: any = document.getElementById("container");
+  const renderer = new THREE.WebGLRenderer();
+  const width = 960;
+  const height = 500;
+  renderer.setSize(width, height);
+  container.appendChild(renderer.domElement);
+
+  // scene
+  const scene = new THREE.Scene();
+
+  // camera
+  const camera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
+  camera.position.set(0, 0, 500);
+  scene.add(camera);
+  // controls
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 0, 0);
+  controls.update();
+
+  // light
+  // AmbientLight
+  const AmbientLight = new THREE.AmbientLight(0xffffff, 4.0);
+  //scene.add(AmbientLight);
+  // DirectionalLight
+  const DirectionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
+  DirectionalLight.position.set(20, 100, 10);
+  scene.add(DirectionalLight);
+
+  // model
+  const loader = new FBXLoader();
+  let mixer: THREE.AnimationMixer;
+  let defaultAction: THREE.AnimationAction;
+  loader.load("./test.fbx", (model) => {
+    console.log("model: ", model);
+    model.scale.setScalar(10);
+    mixer = new THREE.AnimationMixer(model);
+    //console.log("mixer: ", mixer);
+    console.log("Animations: ", model.animations);
+    defaultAction = mixer.clipAction(model.animations[0]);
+    console.log("defaultAction: ", defaultAction);
+    defaultAction.play();
+    scene.add(model);
+
+    animate();
+  });
+
+  const clock = new THREE.Clock();
   function animate() {
+    //mixer.update(clock.getDelta());
+    renderer.render(scene, camera);
     requestAnimationFrame(animate);
   }
 
-  /*
-  // dat.gui
-  const gui: GUI = new GUI();
-
-  // ----- camera -----
-  const CamaraFolder: GUI = gui.addFolder("Camera");
-  CamaraFolder.open();
-  // TODO: FOVを追加
-  const CameraParams: Object = {
-    "position x": camera.position.x,
-    "position y": camera.position.y,
-    "position z": camera.position.z,
-  };
-  CamaraFolder.add(CameraParams, "position x", -5000, +5000, 1).onChange(
-    setCameraPositionX
-  );
-  function setCameraPositionX(position: number) {
-    camera.position.x = position;
-  }
-
-  CamaraFolder.add(CameraParams, "position y", -5000, +5000, 1).onChange(
-    setCameraPositionY
-  );
-  function setCameraPositionY(position: number) {
-    camera.position.y = position;
-  }
-  CamaraFolder.add(CameraParams, "position z", -5000, 5000, 1).onChange(
-    setCameraPositionZ
-  );
-  function setCameraPositionZ(position: number) {
-    camera.position.z = position;
-  }
-  // ----- controls -----
-  const ControlFolder = gui.addFolder("Control");
-  ControlFolder.open();
-  console.log("ThreeParamsStore: ", ThreeParamsStore.Control);
-  const ControlParams: Object = {
-    "target x": controls.target.x,
-    "target y": controls.target.y,
-    "target z": controls.target.z,
-  };
-
-  // ----- light -----
-  const LightFolder: GUI = gui.addFolder("Light");
-  const LightFolderParam: Object = {
-    Light1: "Hello",
-    addLight: "AddLight",
-    help: "test",
-  };
-
-  LightFolder.add(LightFolderParam, "Light1", "adder");
-
-  // ----- helper -----
-  const HelperFolder: GUI = gui.addFolder("Helpers");
-  const HelperParams: Object = {
-    "show Axes": false,
-  };
-  HelperFolder.add(HelperParams, "show Axes").onChange(showAxes);
-  function showAxes(visiblity: boolean) {
-    AxesHelper.visible = visiblity;
-  }
-  */
-
-  const tick = (): void => {
-    requestAnimationFrame(tick);
-
-    // 描画
-    renderer.render(scene, camera);
-  };
-  tick();
-
-  console.log("Hello Three.js");
-});
+  // drag and drop
+  container.addEventListener("dragover", (e: any) => {
+    // デフォルトの挙動を止めないとブラウザの処理が優先されるため必要
+    e.preventDefault();
+  });
+  container.addEventListener("dragenter", (e: any) => {
+    // 入ったことを通知するCSSを追加
+  });
+  container.addEventListener("dragleave", (e: any) => {
+    // 出たことを通知するCSSを追加
+  });
+  container.addEventListener("drop", (e: any) => {
+    // ?
+    e.stopPropagation();
+    e.preventDefault();
+    console.log("event: ", e);
+    const Uploadedfiles = e.dataTransfer.files;
+    const Uploadedfile: any = Uploadedfiles.length === 1 && Uploadedfiles[0];
+    console.log("upload file: ", Uploadedfile);
+    const UploadedURL = window.URL.createObjectURL(Uploadedfile);
+    window.URL.revokeObjectURL(Uploadedfile);
+  });
+}
