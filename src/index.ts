@@ -19,6 +19,7 @@ class UpReFBX {
   clock: THREE.Clock;
   mixer: THREE.AnimationMixer;
   model: THREE.Group;
+  skelton: THREE.SkeletonHelper;
   actions: THREE.AnimationAction[];
   loader: FBXLoader;
   // for renderer
@@ -134,12 +135,16 @@ class UpReFBX {
     this.loader = new FBXLoader();
     this.loader.load(url, (model) => {
       this.model = model;
+      this.model.visible = true;
+      this.skelton = new THREE.SkeletonHelper(model);
+      this.skelton.visible = false;
       this.mixer = new THREE.AnimationMixer(model);
       // 初期化しないとエラーするから必要
       this.actions = new Array();
       this.actions[0] = this.mixer.clipAction(model.animations[0]);
       this.actions[0].play();
       this.scene.add(model);
+      this.scene.add(this.skelton);
       /**
        * loaderの中でdatを読み込むことによって、
        * modelとmixerもベースオブジェクトとして渡すことができる
@@ -167,6 +172,7 @@ class UpReFBX {
     // model
     const model: GUI = this.panel.addFolder("Model");
     const scale: GUI = model.addFolder("Scale");
+    const visible: GUI = model.addFolder("visible");
 
     console.log("model: ", this.model);
     // dat.guiが読み込めるのはprimitive型のみ
@@ -183,6 +189,10 @@ class UpReFBX {
           reset: scaleReset.bind(this),
           up: scaleUp.bind(this),
           down: scaleDown.bind(this),
+        },
+        visible: {
+          model: true,
+          skelton: false,
         },
       },
     };
@@ -207,11 +217,16 @@ class UpReFBX {
     scale.add(settings.model.scale, "reset");
     scale.add(settings.model.scale, "up");
     scale.add(settings.model.scale, "down");
+    visible.add(settings.model.visible, "model").onChange(showModel.bind(this));
+    visible
+      .add(settings.model.visible, "skelton")
+      .onChange(showSkelton.bind(this));
 
     // folder status
     camera.open();
     model.open();
     scale.open();
+    visible.open();
 
     // moveCamera
     function moveCameraX(this: any, value: number): void {
@@ -248,6 +263,12 @@ class UpReFBX {
     function scaleDown(this: any): void {
       settings.model.scale.curretscale -= settings.model.scale.step;
       this.model.scale.setScalar(settings.model.scale.curretscale);
+    }
+    function showModel(this: any, visiblity: boolean): void {
+      this.model.visible = visiblity;
+    }
+    function showSkelton(this: any, visiblity: boolean): void {
+      this.skelton.visible = visiblity;
     }
 
     this.style();
