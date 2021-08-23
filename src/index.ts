@@ -157,7 +157,9 @@ class UpReFBX {
 
     // folders
     // camera
-    const camera = this.panel.addFolder("Camera");
+    const camera: GUI = this.panel.addFolder("Camera");
+    const camera_position: GUI = camera.addFolder("position");
+    const camera_move: GUI = camera.addFolder("move");
     // lights
     const lights = this.panel.addFolder("Lights");
     const AmbientLights = lights.addFolder("AmbientLights");
