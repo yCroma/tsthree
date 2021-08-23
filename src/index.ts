@@ -52,7 +52,7 @@ class UpReFBX {
     const near = 1.0;
     const far = 1000.0;
     this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    this.camera.position.set(0, 0, 100);
+    this.camera.position.set(0, 30, 40);
     this.scene.add(this.camera);
 
     // controls
