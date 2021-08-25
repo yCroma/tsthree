@@ -97,8 +97,10 @@ class UpReFBX {
       // よって、0.001倍してmsに変換する必要がある
       let deltaTime = (t - this.previousRAF) * 0.001;
       if (this.mixer) this.mixer.update(deltaTime);
+      //if (this.mixer) console.log(this.actions[0].time);
       this.animate();
       this.renderer.render(this.scene, this.camera);
+      //this.panel.updateDisplay();
       this.previousRAF = t;
     });
   }
@@ -159,6 +161,8 @@ class UpReFBX {
     this.panel = new GUI({ autoPlace: false });
     // キャンバスへ追加
     this.container.appendChild(this.panel.domElement);
+    console.log("mixer: ", this.mixer);
+    console.log("default actions:", this.actions[0]);
 
     // folders
     // camera
