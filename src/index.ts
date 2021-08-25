@@ -259,8 +259,8 @@ class UpReFBX {
     camera_move.open();
     // model
     model.close();
-    scale.open();
-    visible.open();
+    scale.close();
+    visible.close();
 
     // moveCamera
     function moveCameraX(this: any, value: number): void {
