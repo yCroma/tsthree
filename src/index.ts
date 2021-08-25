@@ -173,6 +173,7 @@ class UpReFBX {
     const model: GUI = this.panel.addFolder("Model");
     const scale: GUI = model.addFolder("scale");
     const visible: GUI = model.addFolder("visible");
+    const controler: GUI = model.addFolder("controler");
 
     console.log("model: ", this.model);
     // dat.guiが読み込めるのはprimitive型のみ
@@ -211,6 +212,9 @@ class UpReFBX {
         visible: {
           model: true,
           skelton: false,
+        },
+        controler: {
+          pause: modelPause.bind(this),
         },
       },
     };
@@ -251,6 +255,7 @@ class UpReFBX {
     visible
       .add(settings.model.visible, "skelton")
       .onChange(showSkelton.bind(this));
+    controler.add(settings.model.controler, "pause");
 
     // folder status
     // camera
@@ -331,6 +336,11 @@ class UpReFBX {
     }
     function showSkelton(this: any, visiblity: boolean): void {
       this.skelton.visible = visiblity;
+    }
+    function modelPause(this: any): void {
+      // clipAction.pausedはbooleanを返す
+      // これをtoggleすることによって、pauseを切り替えてる
+      this.actions[0].paused = !this.actions[0].paused;
     }
 
     this.style();
