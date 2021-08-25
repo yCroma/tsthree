@@ -254,11 +254,11 @@ class UpReFBX {
 
     // folder status
     // camera
-    camera.open();
+    camera.close();
     camera_position.close();
     camera_move.open();
     // model
-    model.open();
+    model.close();
     scale.open();
     visible.open();
 
