@@ -14,14 +14,14 @@ class UpReFBX {
   camera: THREE.PerspectiveCamera;
   controls: OrbitControls;
   renderer: THREE.WebGLRenderer;
-  AmbientLights: THREE.AmbientLight[];
-  DirectionalLights: THREE.DirectionalLight[];
+  AmbientLights: Array<THREE.AmbientLight>;
+  DirectionalLights: Array<THREE.DirectionalLight>;
   clock: THREE.Clock;
   mixer: THREE.AnimationMixer;
-  animations: THREE.AnimationClip[];
+  animations: Array<THREE.AnimationClip>;
   model: THREE.Group;
   skelton: THREE.SkeletonHelper;
-  actions: THREE.AnimationAction[];
+  actions: Array<THREE.AnimationAction>;
   loader: FBXLoader;
   // for renderer
   container: any;
