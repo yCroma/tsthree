@@ -26,6 +26,7 @@ class UpReFBX {
   container: any;
   // for dat
   panel: GUI;
+  settings: Object;
   // for controls
   controls_target: THREE.Vector3;
   // for animate
@@ -182,7 +183,7 @@ class UpReFBX {
     console.log("model: ", this.model);
     // dat.guiが読み込めるのはprimitive型のみ
     // objectを読み込ませるとエラーが出るので要注意
-    const settings = {
+    this.settings = {
       camera: {
         lookAt: {
           x: this.controls.target.x,
@@ -218,48 +219,49 @@ class UpReFBX {
           skelton: false,
         },
         controler: {
+          time: this.actions[0].time,
           pause: modelPause.bind(this),
         },
       },
     };
-    console.log("setting: ", settings);
 
     // params
     // camera
     camera_position
-      .add(settings.camera.position, "x", -500, 500, 1)
+      .add(this.settings.camera.position, "x", -500, 500, 1)
       .onChange(moveCameraX.bind(this));
     camera_position
-      .add(settings.camera.position, "y", -500, 500, 1)
+      .add(this.settings.camera.position, "y", -500, 500, 1)
       .onChange(moveCameraY.bind(this));
     camera_position
-      .add(settings.camera.position, "z", -500, 500, 1)
+      .add(this.settings.camera.position, "z", -500, 500, 1)
       .onChange(moveCameraZ.bind(this))
       .listen();
-    camera_move.add(settings.camera.move, "step");
-    camera_move.add(settings.camera.move, "reset");
-    camera_move.add(settings.camera.move, "forward");
-    camera_move.add(settings.camera.move, "backword");
-    camera_move.add(settings.camera.move, "up");
-    camera_move.add(settings.camera.move, "down");
-    camera_move.add(settings.camera.move, "right");
-    camera_move.add(settings.camera.move, "left");
+    camera_move.add(this.settings.camera.move, "step");
+    camera_move.add(this.settings.camera.move, "reset");
+    camera_move.add(this.settings.camera.move, "forward");
+    camera_move.add(this.settings.camera.move, "backword");
+    camera_move.add(this.settings.camera.move, "up");
+    camera_move.add(this.settings.camera.move, "down");
+    camera_move.add(this.settings.camera.move, "right");
+    camera_move.add(this.settings.camera.move, "left");
     // lights
     // lightsは配列で定義すれば、フォルダの管理はどうにかなる
     // helper
 
     // model
-    scale.add(settings.model.scale, "step");
-    scale.add(settings.model.scale, "reset");
-    scale.add(settings.model.scale, "up");
-    scale.add(settings.model.scale, "down");
+    scale.add(this.settings.model.scale, "step");
+    scale.add(this.settings.model.scale, "reset");
+    scale.add(this.settings.model.scale, "up");
+    scale.add(this.settings.model.scale, "down");
     visible
-      .add(settings.model.visible, "model")
+      .add(this.settings.model.visible, "model")
       .onChange(showModel.bind(this));
     visible
-      .add(settings.model.visible, "skelton")
+      .add(this.settings.model.visible, "skelton")
       .onChange(showSkelton.bind(this));
-    controler.add(settings.model.controler, "pause");
+    controler.add(this.settings.model.controler, "pause");
+    controler.add(this.settings.model.controler, "time").listen();
 
     // folder status
     // camera
@@ -298,42 +300,42 @@ class UpReFBX {
     }
     function moveReset(this: any): void {
       this.camera.position.set(
-        settings.camera.position.x,
-        settings.camera.position.y,
-        settings.camera.position.z
+        this.settings.camera.position.x,
+        this.settings.camera.position.y,
+        this.settings.camera.position.z
       );
     }
     function moveForward(this: any): void {
-      this.camera.position.z -= settings.camera.move.step;
+      this.camera.position.z -= this.settings.camera.move.step;
     }
     function moveBackword(this: any): void {
-      this.camera.position.z += settings.camera.move.step;
+      this.camera.position.z += this.settings.camera.move.step;
     }
     function moveUp(this: any): void {
-      this.camera.position.y += settings.camera.move.step;
+      this.camera.position.y += this.settings.camera.move.step;
     }
     function moveDown(this: any): void {
-      this.camera.position.y -= settings.camera.move.step;
+      this.camera.position.y -= this.settings.camera.move.step;
     }
     function moveRight(this: any): void {
-      this.camera.position.x += settings.camera.move.step;
+      this.camera.position.x += this.settings.camera.move.step;
     }
     function moveLeft(this: any): void {
-      this.camera.position.x -= settings.camera.move.step;
+      this.camera.position.x -= this.settings.camera.move.step;
     }
 
     // model
     function scaleReset(this: any): void {
       this.model.scale.setScalar(1);
-      settings.model.scale.curretscale = 1;
+      this.settings.model.scale.curretscale = 1;
     }
     function scaleUp(this: any): void {
-      settings.model.scale.curretscale += settings.model.scale.step;
-      this.model.scale.setScalar(settings.model.scale.curretscale);
+      this.settings.model.scale.curretscale += this.settings.model.scale.step;
+      this.model.scale.setScalar(this.settings.model.scale.curretscale);
     }
     function scaleDown(this: any): void {
-      settings.model.scale.curretscale -= settings.model.scale.step;
-      this.model.scale.setScalar(settings.model.scale.curretscale);
+      this.settings.model.scale.curretscale -= this.settings.model.scale.step;
+      this.model.scale.setScalar(this.settings.model.scale.curretscale);
     }
     function showModel(this: any, visiblity: boolean): void {
       this.model.visible = visiblity;
