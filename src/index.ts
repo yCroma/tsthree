@@ -90,7 +90,7 @@ class UpReFBX {
     this.animate();
   }
 
-  animate(): any {
+  animate(): void {
     requestAnimationFrame((t) => {
       if (this.previousRAF === null) {
         this.previousRAF = t;
@@ -99,15 +99,20 @@ class UpReFBX {
       // よって、0.001倍してmsに変換する必要がある
       let deltaTime = (t - this.previousRAF) * 0.001;
       if (this.mixer) this.mixer.update(deltaTime);
-      //if (this.mixer) console.log(this.actions[0].time);
+      //if (this.actions) console.log("time: ", this.actions[0]);
+      //if (this.animations) console.log(this.animations[0]);
+      //if (this.actions) console.log("time: ", this.actions[0].time);
+      if (this.panel) this.settings = this.settings;
+      //if (this.panel) console.log(this.settings);
+      if (this.panel) this.panel.updateDisplay();
       this.animate();
       this.renderer.render(this.scene, this.camera);
-      //this.panel.updateDisplay();
       this.previousRAF = t;
     });
   }
 
   dnd(): void {
+    // TODO: 2回目以降のuploadの対策をする
     this.container.addEventListener("dragover", (e: any) => {
       // ブラウザのデフォルトの挙動が優先されるのを回避するために必要
       e.preventDefault();
@@ -147,7 +152,6 @@ class UpReFBX {
       // 初期化しないとエラーするから必要
       this.actions = [];
       this.actions[0] = this.mixer.clipAction(this.animations[0]);
-      console.log("animation: ", this.animations);
       this.actions[0].play();
       this.scene.add(model);
       this.scene.add(this.skelton);
@@ -165,8 +169,6 @@ class UpReFBX {
     this.panel = new GUI({ autoPlace: false });
     // キャンバスへ追加
     this.container.appendChild(this.panel.domElement);
-    console.log("mixer: ", this.mixer);
-    console.log("default actions:", this.actions[0]);
 
     // folders
     // camera
@@ -184,6 +186,7 @@ class UpReFBX {
     const controler: GUI = model.addFolder("controler");
 
     console.log("model: ", this.model);
+    console.log("action: ", this.actions[0]);
     // dat.guiが読み込めるのはprimitive型のみ
     // objectを読み込ませるとエラーが出るので要注意
     this.settings = {
@@ -263,8 +266,10 @@ class UpReFBX {
     visible
       .add(this.settings.model.visible, "skelton")
       .onChange(showSkelton.bind(this));
+    controler
+      .add(this.actions[0], "time", 0, this.animations[0].duration, 0.001)
+      .listen();
     controler.add(this.settings.model.controler, "pause");
-    controler.add(this.settings.model.controler, "time").listen();
 
     // folder status
     // camera
@@ -272,9 +277,10 @@ class UpReFBX {
     camera_position.close();
     camera_move.open();
     // model
-    model.close();
+    model.open();
     scale.close();
     visible.close();
+    controler.open();
 
     // moveCamera
     function moveCameraX(this: any, value: number): void {
