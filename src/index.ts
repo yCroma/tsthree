@@ -145,7 +145,7 @@ class UpReFBX {
       this.mixer = new THREE.AnimationMixer(model);
       this.animations = this.model.animations;
       // 初期化しないとエラーするから必要
-      this.actions = new Array();
+      this.actions = [];
       this.actions[0] = this.mixer.clipAction(this.animations[0]);
       console.log("animation: ", this.animations);
       this.actions[0].play();
