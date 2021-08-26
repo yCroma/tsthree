@@ -18,6 +18,7 @@ class UpReFBX {
   DirectionalLights: THREE.DirectionalLight[];
   clock: THREE.Clock;
   mixer: THREE.AnimationMixer;
+  animations: THREE.AnimationClip[];
   model: THREE.Group;
   skelton: THREE.SkeletonHelper;
   actions: THREE.AnimationAction[];
@@ -142,9 +143,11 @@ class UpReFBX {
       this.skelton = new THREE.SkeletonHelper(model);
       this.skelton.visible = false;
       this.mixer = new THREE.AnimationMixer(model);
+      this.animations = this.model.animations;
       // 初期化しないとエラーするから必要
       this.actions = new Array();
-      this.actions[0] = this.mixer.clipAction(model.animations[0]);
+      this.actions[0] = this.mixer.clipAction(this.animations[0]);
+      console.log("animation: ", this.animations);
       this.actions[0].play();
       this.scene.add(model);
       this.scene.add(this.skelton);
