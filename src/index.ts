@@ -272,6 +272,7 @@ class UpReFBX {
     clips
       .add(this.settings.clips, "speed", 0, 2, 0.001)
       .onChange((value: number) => (this.animation_speed = value));
+    clips.add(this.settings.clips, "addclip");
 
     // folder status
     // camera
@@ -358,6 +359,31 @@ class UpReFBX {
       // clipAction.pausedはbooleanを返す
       // これをtoggleすることによって、pauseを切り替えてる
       this.actions[0].paused = !this.actions[0].paused;
+    }
+    function AddClip(this: any): void {
+      // 新しい値をsettingに追加
+      const start = this.settings.clips.clipstart;
+      const end = this.settings.clips.clipend;
+      const clip = {
+        start: start,
+        end: end,
+      };
+      const index = this.settings.clips.folder.index;
+      const index_length = this.settings.clips.folder.index.length;
+      const clips = this.settings.clips.folder.clips;
+      index.push(`clip${index_length}`);
+      clips[`clip${index_length}`] = clip;
+      // controllerを再作成することによって、擬似的にプロパティを変える
+      // controllerの削除
+      clip_folder.remove(clip_folder.__controllers[0]);
+      // controllerの作成
+      clip_folder
+        .add(
+          this.settings.clips.folder,
+          "current_index",
+          this.settings.clips.folder.index
+        )
+        .name("index");
     }
 
     this.style();
