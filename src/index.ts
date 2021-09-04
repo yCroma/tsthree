@@ -30,6 +30,7 @@ class UpReFBX {
   settings: Object;
   // for controls
   controls_target: THREE.Vector3;
+  animation_speed: number;
   // for animate
   previousRAF: any;
 
@@ -82,6 +83,9 @@ class UpReFBX {
     // clock
     this.clock = new THREE.Clock();
 
+    // animation_speed
+    this.animation_speed = 1;
+
     // dnd
     // fbx is loaded only dnd
     this.dnd();
@@ -97,7 +101,7 @@ class UpReFBX {
       }
       // t の単位はms(example: 現実 0.016s, 出力 16)
       // よって、0.001倍してmsに変換する必要がある
-      let deltaTime = (t - this.previousRAF) * 0.001;
+      let deltaTime = (t - this.previousRAF) * 0.001 * this.animation_speed;
       if (this.mixer) this.mixer.update(deltaTime);
       //if (this.actions) console.log("time: ", this.actions[0]);
       //if (this.animations) console.log(this.animations[0]);
@@ -270,6 +274,10 @@ class UpReFBX {
       .add(this.actions[0], "time", 0, this.animations[0].duration, 0.001)
       .listen();
     controler.add(this.settings.model.controler, "pause");
+    // ファイル名を"speed"にするために意図的にpropertyを追加している
+    clips
+      .add(this.settings.clips, "speed", 0, 2, 0.001)
+      .onChange((value: number) => (this.animation_speed = value));
 
     // folder status
     // camera
