@@ -103,6 +103,17 @@ class UpReFBX {
       // よって、0.001倍してmsに変換する必要がある
       let deltaTime = (t - this.previousRAF) * 0.001 * this.animation_speed;
       if (this.mixer) this.mixer.update(deltaTime);
+      if (this.settings) {
+        // なぜか動くから修正しないといけない
+        const index = this.settings.clips.folder.current_index;
+        const clips = this.settings.clips.folder.clips;
+        const start = clips[index].start;
+        const end = clips[index].end;
+        const time = this.actions[0].time;
+        if (time < start) this.actions[0].time = start;
+        // endを超えたら、リスタートすれば良い
+        if (time > end) this.actions[0].time = start;
+      }
       this.animate();
       this.renderer.render(this.scene, this.camera);
       this.previousRAF = t;
@@ -265,6 +276,18 @@ class UpReFBX {
       .add(this.settings.model.visible, "skelton")
       .onChange(showSkelton.bind(this));
     controler
+    // datGUIは、premitiveな型しか渡せない
+    // objectの処理をしたい場合は、プログラム側から参照しないといけない
+    clip_folder
+      .add(
+        this.settings.clips.folder,
+        "current_index",
+        this.settings.clips.folder.index
+      )
+      .name("index")
+      .onChange((value: any) =>
+        console.log(this.settings.clips.folder.clips[value])
+      );
       .add(this.actions[0], "time", 0, this.animations[0].duration, 0.001)
       .listen();
     controler.add(this.settings.model.controler, "pause");
