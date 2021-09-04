@@ -193,6 +193,9 @@ class UpReFBX {
     const scale: GUI = model.addFolder("scale");
     const visible: GUI = model.addFolder("visible");
     const controler: GUI = model.addFolder("controler");
+    // clips
+    const clips: GUI = this.panel.addFolder("Clips");
+    const clip_folder: GUI = clips.addFolder("folder");
 
     console.log("model: ", this.model);
     console.log("action: ", this.actions[0]);
@@ -236,6 +239,26 @@ class UpReFBX {
         controler: {
           time: this.actions[0].time,
           pause: modelPause.bind(this),
+      clips: {
+        play: modelPlay.bind(this),
+        pause: modelPause.bind(this),
+        speed: 1,
+        clipstart: 0,
+        clipend: this.animations[0].duration,
+        addclip: AddClip.bind(this),
+        folder: {
+          index: ["default", "clip1"],
+          current_index: "default",
+          clips: {
+            default: {
+              start: 0,
+              end: this.animations[0].duration,
+            },
+            clip1: {
+              start: 0.094,
+              end: 0.93,
+            },
+          },
         },
       },
     };
@@ -288,13 +311,17 @@ class UpReFBX {
       .onChange((value: any) =>
         console.log(this.settings.clips.folder.clips[value])
       );
+    clips
       .add(this.actions[0], "time", 0, this.animations[0].duration, 0.001)
       .listen();
-    controler.add(this.settings.model.controler, "pause");
+    clips.add(this.settings.clips, "play");
+    clips.add(this.settings.clips, "pause");
     // ファイル名を"speed"にするために意図的にpropertyを追加している
     clips
       .add(this.settings.clips, "speed", 0, 2, 0.001)
       .onChange((value: number) => (this.animation_speed = value));
+    clips.add(this.settings.clips, "clipstart").step(0.001);
+    clips.add(this.settings.clips, "clipend").step(0.001);
     clips.add(this.settings.clips, "addclip");
 
     // folder status
