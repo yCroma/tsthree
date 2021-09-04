@@ -201,6 +201,8 @@ class UpReFBX {
     console.log("action: ", this.actions[0]);
     // dat.guiが読み込めるのはprimitive型のみ
     // objectを読み込ませるとエラーが出るので要注意
+    // three外で利用するデータを保存するオブジェクト
+    // 例) 操作関連の関数
     this.settings = {
       camera: {
         move: {
@@ -250,6 +252,21 @@ class UpReFBX {
         },
       },
     };
+
+    // three.jsに関するobjectの再利用する初期値を置いておく
+    // propertyはオブジェクト内に関するもの
+    const property = {
+      camera: {
+        position: {
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z,
+        },
+      },
+    };
+    Object.freeze(property);
+    // paramsは操作するための値を提供するためのオブジェクト
+    const params = {};
 
     // params
     // camera
