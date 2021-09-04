@@ -396,6 +396,9 @@ class UpReFBX {
     function showSkelton(this: any, visiblity: boolean): void {
       this.skelton.visible = visiblity;
     }
+    function modelPlay(this: any): void {
+      this.actions[0].paused = false;
+    }
     function modelPause(this: any): void {
       // clipAction.pausedはbooleanを返す
       // これをtoggleすることによって、pauseを切り替えてる
