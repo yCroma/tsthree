@@ -103,12 +103,6 @@ class UpReFBX {
       // よって、0.001倍してmsに変換する必要がある
       let deltaTime = (t - this.previousRAF) * 0.001 * this.animation_speed;
       if (this.mixer) this.mixer.update(deltaTime);
-      //if (this.actions) console.log("time: ", this.actions[0]);
-      //if (this.animations) console.log(this.animations[0]);
-      //if (this.actions) console.log("time: ", this.actions[0].time);
-      if (this.panel) this.settings = this.settings;
-      //if (this.panel) console.log(this.settings);
-      if (this.panel) this.panel.updateDisplay();
       this.animate();
       this.renderer.render(this.scene, this.camera);
       this.previousRAF = t;
