@@ -203,16 +203,6 @@ class UpReFBX {
     // objectを読み込ませるとエラーが出るので要注意
     this.settings = {
       camera: {
-        lookAt: {
-          x: this.controls.target.x,
-          y: this.controls.target.y,
-          z: this.controls.target.z,
-        },
-        position: {
-          x: this.camera.position.x,
-          y: this.camera.position.y,
-          z: this.camera.position.z,
-        },
         move: {
           step: 3,
           reset: moveReset.bind(this),
@@ -236,9 +226,7 @@ class UpReFBX {
           model: true,
           skelton: false,
         },
-        controler: {
-          time: this.actions[0].time,
-          pause: modelPause.bind(this),
+      },
       clips: {
         play: modelPlay.bind(this),
         pause: modelPause.bind(this),
@@ -266,15 +254,23 @@ class UpReFBX {
     // params
     // camera
     camera_position
-      .add(this.settings.camera.position, "x", -500, 500, 1)
-      .onChange(moveCameraX.bind(this));
+      .add(this.camera.position, "x", -500, 500, 1)
+      .onChange((value: number) => {
+        this.camera.position.x = value;
+        this.camera.lookAt(this.controls.target);
+      });
     camera_position
-      .add(this.settings.camera.position, "y", -500, 500, 1)
-      .onChange(moveCameraY.bind(this));
+      .add(this.camera.position, "y", -500, 500, 1)
+      .onChange((value: number) => {
+        this.camera.position.y = value;
+        this.camera.lookAt(this.controls.target);
+      });
     camera_position
-      .add(this.settings.camera.position, "z", -500, 500, 1)
-      .onChange(moveCameraZ.bind(this))
-      .listen();
+      .add(this.camera.position, "z", -500, 500, 1)
+      .onChange((value: number) => {
+        this.camera.position.z = value;
+        this.camera.lookAt(this.controls.target);
+      });
     camera_move.add(this.settings.camera.move, "step");
     camera_move.add(this.settings.camera.move, "reset");
     camera_move.add(this.settings.camera.move, "forward");
@@ -335,37 +331,13 @@ class UpReFBX {
     visible.close();
     controler.open();
 
-    // moveCamera
-    function moveCameraX(this: any, value: number): void {
-      this.camera.position.set(
-        value,
-        this.camera.position.y,
-        this.camera.position.z
-      );
-      this.camera.lookAt(this.controls.target);
-    }
-    function moveCameraY(this: any, value: number): void {
-      this.camera.position.set(
-        this.camera.position.x,
-        value,
-        this.camera.position.z
-      );
-      this.camera.lookAt(this.controls.target);
-    }
-    function moveCameraZ(this: any, value: number): void {
-      this.camera.position.set(
-        this.camera.position.x,
-        this.camera.position.y,
-        value
-      );
-      this.camera.lookAt(this.controls.target);
-    }
     function moveReset(this: any): void {
       this.camera.position.set(
-        this.settings.camera.position.x,
-        this.settings.camera.position.y,
-        this.settings.camera.position.z
+        property.camera.position.x,
+        property.camera.position.y,
+        property.camera.position.z
       );
+      this.camera.lookAt(this.controls.target);
     }
     function moveForward(this: any): void {
       this.camera.position.z -= this.settings.camera.move.step;
