@@ -343,10 +343,12 @@ class UpReFBX {
     camera_position.close();
     camera_move.open();
     // model
-    model.open();
+    model.close();
     scale.close();
     visible.close();
-    controler.open();
+    // clips
+    clips.open();
+    clip_folder.open();
 
     function moveReset(this: any): void {
       this.camera.position.set(
