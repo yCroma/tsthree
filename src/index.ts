@@ -88,6 +88,7 @@ class UpReFBX {
 
     // dnd
     // fbx is loaded only dnd
+    // and load panel
     this.dnd();
 
     // animate
@@ -311,7 +312,6 @@ class UpReFBX {
     visible
       .add(this.settings.model.visible, "skelton")
       .onChange(showSkelton.bind(this));
-    controler
     // datGUIは、premitiveな型しか渡せない
     // objectの処理をしたい場合は、プログラム側から参照しないといけない
     clip_folder
