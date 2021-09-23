@@ -34,8 +34,6 @@ class UpReFBX {
   // for animate
   previousRAF: any;
 
-  constructor() {
-    this.init();
   constructor(canvasId?: string) {
     canvasId = canvasId ?? "fbxer";
     const canvasDOM = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -44,6 +42,8 @@ class UpReFBX {
      * HTMLCanvasElementを渡している
      */
     this.start(canvasDOM);
+  }
+
   start(canvasDOM: HTMLCanvasElement): void {
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasDOM,
