@@ -6,6 +6,7 @@
 
 ```mermaid
 flowchart LR
+
     id10{対象のCanvasのidが決まっているか?}
     id11[指定のidのCanvasに対して描画される]
     id20{idがfbxerというCanvasを用意しているか?}
@@ -22,6 +23,7 @@ canvas 関連のクラス図。この図を見れば、変数などの流れが�
 
 ```mermaid
 classDiagram
+
 class Root{
   -THREE Clock
   -init()
@@ -29,7 +31,7 @@ class Root{
 
 class ThreeParamStore{
   <<interface>>
-  THREE¥.Clock Clock
+  THREEClock Clock
 }
 ```
 
