@@ -38,6 +38,9 @@ class UpReFBX {
     this.init();
   constructor(canvasId?: string) {
     canvasId = canvasId ?? "fbxer";
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvasDOM,
+    });
   }
 
   init(): void {
