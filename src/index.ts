@@ -36,6 +36,8 @@ class UpReFBX {
 
   constructor() {
     this.init();
+  constructor(canvasId?: string) {
+    canvasId = canvasId ?? "fbxer";
   }
 
   init(): void {
