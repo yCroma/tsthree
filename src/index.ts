@@ -33,6 +33,7 @@ class UpReFBX {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
+  controls: OrbitControls;
   clock: THREE.Clock;
 
   constructor(canvasId?: string) {
@@ -60,6 +61,8 @@ class UpReFBX {
     this.camera.position.set(0, 30, 40);
     this.scene.add(this.camera);
 
+    // controls
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.clock = new THREE.Clock();
   }
 
