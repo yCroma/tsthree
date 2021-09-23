@@ -10,13 +10,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 class UpReFBX {
   // property
-  scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
-  controls: OrbitControls;
-  renderer: THREE.WebGLRenderer;
   AmbientLights: Array<THREE.AmbientLight>;
   DirectionalLights: Array<THREE.DirectionalLight>;
-  clock: THREE.Clock;
   mixer: THREE.AnimationMixer;
   animations: Array<THREE.AnimationClip>;
   model: THREE.Group;
@@ -34,6 +29,12 @@ class UpReFBX {
   // for animate
   previousRAF: any;
 
+  // refuct
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  clock: THREE.Clock;
+
   constructor(canvasId?: string) {
     canvasId = canvasId ?? "fbxer";
     const canvasDOM = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -44,10 +45,22 @@ class UpReFBX {
     this.start(canvasDOM);
   }
 
+  // animate()を実行するための最小限の要素を初期化
   start(canvasDOM: HTMLCanvasElement): void {
-    const renderer = new THREE.WebGLRenderer({
+    this.renderer = new THREE.WebGLRenderer({
       canvas: canvasDOM,
     });
+    this.scene = new THREE.Scene();
+    // camera
+    const fov = 60;
+    const aspect = canvasDOM.width / canvasDOM.height;
+    const near = 1.0;
+    const far = 1000.0;
+    this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    this.camera.position.set(0, 30, 40);
+    this.scene.add(this.camera);
+
+    this.clock = new THREE.Clock();
   }
 
   init(): void {
