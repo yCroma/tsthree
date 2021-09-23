@@ -5,7 +5,7 @@ import { GUI } from "dat.gui";
 
 let init = null;
 window.addEventListener("DOMContentLoaded", () => {
-  init = new UpReFBX();
+  init = new UpReFBX("container");
 });
 
 class UpReFBX {
